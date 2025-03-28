@@ -1,0 +1,18 @@
+{
+    "todolist": {
+        "latest_tasks": "Dernières tâches"
+    },
+    "modaltodo": {
+        "title": {
+            "add_task": "Ajouter une tâche",
+            "edit_task": "Modifier une tâche"
+        },
+        "form": {
+            "title": "Libellé de la tâche à faire",
+            "priority": "Priorité de la tâche",
+            "recurrent": "Tâche récurrente",
+            "assignedTo": "Qui fait la tâche ?",
+            "submit_label": "Valider"
+        }
+    }
+}
