@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref } from 'vue'
+import { onBeforeMount, ref, type ComponentOptionsMixin, type ComponentProvideOptions, type DefineComponent, type PublicProps, type Ref } from 'vue'
 import TodoItem from './TodoItem.vue'
 import AddTask from './AddTask.vue'
 import type Item from '@/models/Item'
@@ -12,10 +12,19 @@ import {
 } from 'flowbite'
 import ModalTodo from './ModalTodo.vue'
 import { useI18n } from 'vue-i18n'
+import ItemService from '@/services/item.service'
+import Filters from './Filters.vue'
+import ModalService from '@/services/modal.service'
+import Alert from '../Alert/Alert.vue'
 
-let modal: ModalInterface
+let modal: ModalInterface;
+let alert: ModalInterface;
+const itemService = new ItemService();
+const modalService = new ModalService();
 const items = ref([] as Item[])
 let currentItem = ref<Item>()
+let newItem = ref<Item>({} as Item)
+let idToRemove = ref<number>(0);
 
 const { t } = useI18n() 
 
@@ -24,46 +33,30 @@ onBeforeMount(async () => {
   initFlowbite()
 })
 
-const getItems = () => {
-  fetch('http://192.168.1.64:3000/item?status=active')
-    .then((response) => response.json())
-    .then((data) => {
-      items.value = data
-      currentItem.value = data[0] as Item
-    })
-    .catch((error) => void 0)
+const getItems = (status: string = 'active') => {
+  itemService.getItems(status).then(response => {
+    items.value = response; 
+    currentItem.value = items.value[0] 
+  });
 }
 
 const openModal = (item: Item) => {
   currentItem.value = item
-  const $modalElement: HTMLElement | null = document.querySelector('#modal-item')
-
-  const modalOptions: ModalOptions = {
-    backdrop: 'dynamic',
-    backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-    closable: true,
-  }
-
-  // instance options object
-  const instanceOptions: InstanceOptions = {
-    id: 'modal-item',
-    override: true,
-  }
-
-  modal = new Modal($modalElement, modalOptions, instanceOptions)
+  modal = modalService.getModalInstance('#modal-item')
   modal.show()
 }
 
-const editTask = () => {
-  fetch('http://192.168.1.64:3000/item/' + currentItem.value.id, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify(currentItem.value),
-  }).catch((error) => void 0)
+const openAlert = (id: number) => {
+  alert = modalService.getModalInstance('#popup-modal');
+  idToRemove.value = id;
+  alert.show();
+}
 
-  modal.hide()
+const editTask = () => {
+  if (currentItem && currentItem.value) {
+    itemService.updateItem(currentItem.value).then(response => currentItem.value = response);
+    modal.hide()
+  }
 }
 
 const sortItems = () => {
@@ -75,15 +68,43 @@ const sortItems = () => {
     items.value.sort((a: Item, b: Item) => Number(a.done) - Number(b.done))
   }, 500)
 }
+
+const removeItemFromList = (id: number) => {
+  setTimeout(() => {
+    items.value = items.value.filter((item: Item) => item.id !== id);
+  }, 500)
+}
+
+const submitTask = () => {
+  newItem.value.recurrent = newItem.value.recurrent ?? false;
+  newItem.value.done = false;
+  newItem.value.updated = new Date().toLocaleDateString('fr-FR');
+  itemService.saveItem(newItem.value).then(response => newItem.value = response);
+
+  items.value.push(newItem.value);
+  sortItems();
+  const modalNewItem = modalService.getModalInstance('#modal');
+  modalNewItem.hide()
+}
+
+const deleteItem = () => {
+  console.log('idToRemove', idToRemove.value);
+  itemService.deleteItem(idToRemove.value);
+  removeItemFromList(idToRemove.value);
+  alert.hide();
+}
 </script>
 
 <template>
-  <div v-if="items">
+  <div v-if="items" class="px-4">
     <div
       class="w-full p-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:bg-gray-800 dark:border-gray-700"
     >
       <div class="flex items-center justify-between mb-8">
         <h5 class="text-xl font-bold leading-none">{{ t('todolist.latest_tasks') }}</h5>
+      </div>
+      <div class="mb-4">
+        <Filters @filter="(status) => getItems(status)"></Filters>
       </div>
       <div class="flow-root">
         <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -93,6 +114,8 @@ const sortItems = () => {
             :item="item"
             :open-method="openModal"
             @update="sortItems"
+            @updateStatusItem="removeItemFromList"
+            @delete="(id) => openAlert(id)"
           >
           </TodoItem>
         </ul>
@@ -105,6 +128,20 @@ const sortItems = () => {
       </div>
     </div>
     <AddTask />
+    <ModalTodo
+      :modal-id="'modal'"
+      :modal-title="'modaltodo.title.add_task'"
+      :item="newItem"
+      :submit-method="submitTask"
+  ></ModalTodo>
+  <Alert 
+    :popup-id="'popup-modal'" 
+    title="This item will be definitively deleted! Are you sure?" 
+    validate-title="Yes, I'm sure" 
+    cancel-title="Oups! No"
+    @validate="deleteItem()"
+  >
+  </Alert>
   </div>
   <div v-if="!items" class="text-center">
     <div class="spinner-border spinner-border-sm"></div>

@@ -7,8 +7,6 @@ onMounted(() => {
     '#theme-toggle-light-icon',
   )
 
-  console.log(localStorage.getItem('theme'))
-
   if (themeToggleLightIcon && themeToggleDarkIcon) {
     // Change the icons inside the button based on previous settings
     if (

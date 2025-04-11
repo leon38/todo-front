@@ -8,6 +8,8 @@ export default interface Item {
   assignedTo: User
   done: boolean
   status: string
+  recurrenceFrequency: number
+  dueDate?: string
   created: string
   updated: string
 }
