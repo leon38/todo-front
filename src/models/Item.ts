@@ -5,7 +5,7 @@ export default interface Item {
   name: string
   recurrent: boolean
   priority: number
-  assignedTo: User
+  assignedTo: ?User
   done: boolean
   status: string
   recurrenceFrequency: number

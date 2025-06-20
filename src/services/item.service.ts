@@ -1,16 +1,16 @@
 import type Item from "@/models/Item";
 
-const BASE_URL = 'http://192.168.1.64:3000/item/';
+const BASE_URL = 'http://localhost:5173/item/';
 
 export default class ItemService {
-    taskIsDone = (id: number, done: boolean): void => {
+    taskIsDone = (id: number, item: Item): void => {
         fetch(BASE_URL + id, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json; charset=utf-8',
             },
-            body: JSON.stringify({ done: done, updated: new Date() }),
-        }).catch((error) => void 0)
+            body: JSON.stringify({ done: item.done, updated: new Date(), recurrent: item.recurrent }),
+        }).catch((_) => void 0)
     }
 
     updateStatusItem = (status: string, id: number) => {
@@ -20,7 +20,7 @@ export default class ItemService {
             'Content-Type': 'application/json; charset=utf-8',
           },
           body: JSON.stringify({ status: status, updated: new Date() }),
-        }).catch((error) => void 0)
+        }).catch((_) => void 0)
     }
 
     updateItem = async (item: Item) => {
@@ -32,8 +32,7 @@ export default class ItemService {
                 },
                 body: JSON.stringify(item),
             })
-            const itemUpdated = await response.json();
-            return itemUpdated;
+            return await response.json();
         } catch(error) {
             return error;
         }
@@ -42,9 +41,8 @@ export default class ItemService {
     getItems = async (status: string = 'active') => {
         try {
             const response = await fetch(`${BASE_URL}?status=${status}`);
-            const items = await response.json();
-            return items;
-        } catch (error) {
+            return await response.json();
+        } catch (_) {
             return void 0;
         }
     }
@@ -52,9 +50,8 @@ export default class ItemService {
     getStatuses = async () => {
         try {
             const response = await fetch(`${BASE_URL}status`);
-            const statuses = await response.json();
-            return statuses;
-        } catch(error) {
+            return await response.json();
+        } catch(_) {
             return void 0;
         }
     }
@@ -68,8 +65,7 @@ export default class ItemService {
                 },
                 body: JSON.stringify(item),
               });
-            const itemSaved = await response.json();
-            return itemSaved
+            return await response.json();
         } catch (error) {
             return error;
         }
@@ -83,8 +79,7 @@ export default class ItemService {
                     'Content-Type': 'application/json; charset=utf-8',
                   },
             });
-            const itemDeleted = await response.json();
-            return itemDeleted;
+            return await response.json();
         } catch (error) {
             return error;
         }

@@ -13,17 +13,15 @@ const props = defineProps<{
   openMethod: OpenHandler
 }>()
 
-const recurrent = computed(() => {
-  return props.item.recurrent ? '<img src="../../assets/delete.svg" />' : '';
-})
+const item = ref(JSON.parse(JSON.stringify(props.item)) as Item);
 
 const openModal = (callback: OpenHandler, item: Item) => {
   callback(item)
 }
 
-const taskIsDone = (id: number, done: boolean) => {
-  props.item.updated = new Date().toLocaleDateString('fr-FR');
-  itemService.taskIsDone(id, done);
+const taskIsDone = (id: number, item: Item) => {
+  item.updated = new Date().toLocaleDateString('fr-FR');
+  itemService.taskIsDone(id, item);
   emit('update')
 }
 
@@ -68,7 +66,7 @@ const { direction, isSwiping, lengthX, lengthY } = useSwipe(
       if (direction === 'right') {
         swipedLeft.value = true;
         updateStatusItem('archived');
-        
+
       } else if (direction === 'left') {
         swipedRight.value = true;
         updateStatusItem('closed');
@@ -101,22 +99,23 @@ const { direction, isSwiping, lengthX, lengthY } = useSwipe(
         <input
           type="checkbox"
           name="done"
-          v-model="props.item.done"
-          @change="taskIsDone(props.item.id, props.item.done)"
+          v-model="item.done"
+          @change="taskIsDone(props.item.id, props.item)"
         />
       </div>
       <div class="flex-1 min-w-0 ms-4" @click="openModal(props.openMethod, props.item)">
         <p class="text-sm font-medium" :class="{'text-dribbble': !props.item.recurrent}">
           {{ props.item.name }}
         </p>
-        <p class="text-xs text-gray-500 truncate dark:text-gray-300">
-          Mis à jour le {{ new Date(props.item.updated).toLocaleDateString('fr-FR') }}
+        <p v-if="props.item.dueDate !== null" class="text-xs text-gray-500 truncate dark:text-gray-300">
+          Pour le {{ new Date(item.dueDate).toLocaleDateString('fr-FR') }}
         </p>
       </div>
       <div class="inline-flex items-center text-base font-semibold">
         <img
+          v-if="props.item.assignedTo"
           class="w-8 h-8 rounded-full p-1 dark:bg-gray-700"
-          :src="'http://192.168.1.64:3000' + props.item.assignedTo.picture"
+          :src="'http://localhost:5173' + props.item.assignedTo.picture"
           alt="props.item.assignedTo.name"
         />
       </div>

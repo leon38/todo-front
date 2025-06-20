@@ -1,7 +1,7 @@
 import { Modal, type InstanceOptions, type ModalOptions } from "flowbite"
 
 export default class ModalService {
-    
+
     getModalInstance = (targetElement: string): Modal => {
         const $modalElement: HTMLElement | null = document.querySelector(targetElement)
 
@@ -17,7 +17,6 @@ export default class ModalService {
             override: true,
         }
 
-        const modal = new Modal($modalElement, modalOptions, instanceOptions)
-        return modal;
+        return new Modal($modalElement, modalOptions, instanceOptions)
     }
 }

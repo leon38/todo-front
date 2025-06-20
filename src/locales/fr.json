@@ -12,7 +12,23 @@
             "priority": "Priorité de la tâche",
             "recurrent": "Tâche récurrente",
             "assignedTo": "Qui fait la tâche ?",
-            "submit_label": "Valider"
+            "submit_label": "Valider",
+            "priorities": {
+                "infinite": "Infinie",
+                "very_urgent": "Très urgent",
+                "urgent": "Urgent",
+                "normal": "Normal",
+                "on_the_occasion": "À l'occaze",
+                "regular": "Quand on a le temps"
+            },
+            "recurrenceFrequency": "À quelle fréquence ?",
+            "recurrences": {
+                "day": "Jour",
+                "week": "Semaine",
+                "month": "Mois",
+                "year": "Année"
+            },
+            "dueDate": "Pour le :"
         }
     }
 }
